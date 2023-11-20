@@ -1,264 +1,59 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { TouchableWithoutFeedback } from "react-native-web";
 import { useNavigation } from "@react-navigation/native";
 import { SCREEN_NAME } from "../constansts/screens";
-import axios from "axios";
-import WebSocket from "isomorphic-ws";
+import "firebase/database";
+import { db } from "../datafire";
+import { ref, get, set } from "firebase/database";
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [isDoor, setIsDoor] = useState(false);
-  const [curr, setCurr] = useState(null);
+  const [hand, setHand] = useState(0);
 
-  const current = useRef(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const databaseRef = ref(db, "-NignlUxDKWV_4CaTYM-");
+        const snapshot = await get(databaseRef);
+        console.log("snapshot data : ", snapshot);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          console.log("Fetched data:", data["hand"]);
+          setHand(data.hand);
+          setIsDoor(data.hand === 0); // Assuming 0 means door closed
+        } else {
+          console.log("Data doesn't exist.");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      console.log("data firebase : ", isDoor);
+    };
 
-  const channelID = "2321828";
-  const field = "cu chi"; // Thay thế bằng trường dữ liệu bạn muốn lấy
-  const apiKey = "AEC66MXZL9TSPVVC";
-  const apiUrl = "https://api.thingspeak.com/update";
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 500);
 
-  // const url = `https://api.thingspeak.com/channels/${channelID}/fields/${field}.json?api_key=${apiKey}`;
-  const think =
-    "https://api.thingspeak.com/channels/2321828/feeds.json?api_key=AEC66MXZL9TSPVVC&results=2";
-  // setInterval(() => {
-  //   (() => {
-  //     fetch(think)
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         console.log("data", +data.feeds[0].field1);
-  //         setCurr(+data.feeds[0].field1);
-  //         // if (+data.feeds[0].field1 === 4) {
-  //         //   // console.log("mo cua");
-  //         //   setIsDoor(false);
-  //         // } else {
-  //         //   setIsDoor(true);
-  //         //   // console.log("dong cua");
-  //         // }
-  //       })
-  //       .catch((error) => {
-  //         console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-  //       });
-  //   })();
-  // }, 1000);
-  // useEffect(() => {
-  //   ;
-  // }, [curr]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch(think);
-  //       const data = await response.json();
-  //       console.log("test", +data.feeds[0].field1);
-  //       if (+data.feeds[0].field1 === 4) {
-  //         setCurr(+data.feeds[0].field1);
-  //       } else {
-  //         setCurr(+data.feeds[0].field1);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching data from ThingSpeak", error);
-  //     }
-  //   };
-
-  //   const intervalId = setInterval(fetchData, 100);
-
-  //   return () => {
-  //     clearInterval(intervalId);
-  //   };
-  // }, [curr, isDoor]);
-
-  setInterval(() => {
-    (async () => {
-      fetch(think)
-        .then((response) => response.json())
-        .then((data) => {
-          current.current = +data?.feeds[0].field1;
-        })
-        .catch((error) => {
-          console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-        });
-    })();
-    console.log("current  ", current.current);
-  }, 2000);
-
-  const handleSendData = async () => {
-    if (+current.current === 0) {
-      axios.post(
-        `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=${4}`
-      );
-      (async () => {
-        await fetch(think)
-          .then((response) => response.json())
-          .then((data) => {
-            // current.current = +data?.feeds[0].field1;
-            current.current === 4 && setIsDoor(true);
-          })
-          .catch((error) => {
-            console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-          });
-      })();
-    } else {
-      axios.post(
-        `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=${0}`
-      );
-      (async () => {
-        await fetch(think)
-          .then((response) => response.json())
-          .then((data) => {
-            // current.current = +data?.feeds[0].field1;
-            current.current === 0 && setIsDoor(false);
-          })
-          .catch((error) => {
-            console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-          });
-      })();
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, []);
+  const toggleDoorState = async () => {
+    try {
+      const databaseRef = ref(db, "-NignlUxDKWV_4CaTYM-");
+      // Đảm bảo rằng data tồn tại trước khi thực hiện set
+      const snapshot = await get(databaseRef);
+      if (snapshot.exists()) {
+        const currentHand = snapshot.val().hand;
+        const newHandState = currentHand === 0 ? 1 : 0; // Chuyển đổi trạng thái
+        await set(databaseRef, { hand: newHandState });
+        console.log("Data updated successfully!");
+      } else {
+        console.log("Data doesn't exist.");
+      }
+    } catch (error) {
+      console.error("Error updating data:", error);
     }
   };
-
-  // console.log("curr >>>>", curr);
-  // if (+curr === 4) {
-  //   console.log("hien tai cua mo");
-  //   setIsDoor(true);
-  //   await axios
-  //     .post(
-  //       `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=${0}`
-  //     )
-  //     .then((response) => {
-  //       setCurr(0);
-  //       (() => {
-  //         fetch(think)
-  //           .then((response) => response.json())
-  //           .then((data) => {
-  //             console.log(+data.feeds[0].field1);
-  //             setCurr(+data.feeds[0].field1);
-  //             if (+data.feeds[0].field1 === 4) {
-  //               // console.log("mo cua");
-  //               setIsDoor(false);
-  //             } else {
-  //               setIsDoor(true);
-  //               // console.log("dong cua");
-  //             }
-  //           })
-  //           .catch((error) => {
-  //             console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-  //           });
-  //       })();
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error sending data to ThingSpeak", error);
-  //     });
-  // } else {
-  //   setIsDoor(false);
-  //   console.log("hien tai cua dong");
-  //   await axios
-  //     .post(
-  //       `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=${4}`
-  //     )
-  //     .then((response) => {
-  //       setCurr(4);
-  //       (() => {
-  //         fetch(think)
-  //           .then((response) => response.json())
-  //           .then((data) => {
-  //             console.log(+data.feeds[0].field1);
-  //             setCurr(+data.feeds[0].field1);
-  //             if (+data.feeds[0].field1 === 4) {
-  //               // console.log("mo cua");
-  //               setIsDoor(false);
-  //             } else {
-  //               setIsDoor(true);
-  //               // console.log("dong cua");
-  //             }
-  //           })
-  //           .catch((error) => {
-  //             console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-  //           });
-  //       })();
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error sending data to ThingSpeak", error);
-  //     });
-  // }
-
-  // while (true) {
-  //   (() => {
-  //     fetch(think)
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         console.log(+data.feeds[0].field1);
-  //         setCurr(+data.feeds[0].field1);
-  //         if (+data.feeds[0].field1 === 4) {
-  //           // console.log("mo cua");
-  //           setIsDoor(false);
-  //         } else {
-  //           setIsDoor(true);
-  //           // console.log("dong cua");
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.error("Lỗi khi lấy dữ liệu từ ThingSpeak", error);
-  //       });
-  //   })();
-  // }
-
-  // const handleSendData = async () => {
-  //   console.log("curr : ", curr);
-  //   try {
-  //     if (+curr === 4) {
-  //       console.log("hien tai cua mo");
-  //       await axios.post(
-  //         `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=0`
-  //       );
-  //       setIsDoor(true);
-  //       setCurr(0);
-  //     } else {
-  //       console.log("hien tai cua dong");
-  //       await axios.post(
-  //         `https://api.thingspeak.com/update?api_key=9MW9VYJ6HMMJYMLB&field1=4`
-  //       );
-  //       setIsDoor(false);
-  //       setCurr(4);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending data to ThingSpeak", error);
-  //   }
-  // };
-
-  // const socket = new WebSocket(
-  //   "wss://api.thingspeak.com:443/websockets/2321828?api_key=AEC66MXZL9TSPVVC"
-  // ); // Thay thế URL WebSocket cho Thingspeak
-
-  // socket.onopen = () => {
-  //   console.log("Kết nối WebSocket đã được thiết lập.");
-  // };
-
-  // socket.onmessage = (event) => {
-  //   const data = JSON.parse(event.data);
-  //   console.log("Dữ liệu từ server:", data);
-  //   if (data.field1 === "4") {
-  //     setIsDoor(false);
-  //   } else {
-  //     setIsDoor(true);
-  //   }
-  // };
-
-  // socket.onclose = (event) => {
-  //   if (event.wasClean) {
-  //     console.log("Kết nối đã đóng sạch.");
-  //   } else {
-  //     console.error("Kết nối bị đóng bởi lỗi:", event.reason);
-  //   }
-  // };
-
-  // const sendData = (field1Value) => {
-  //   const data = {
-  //     field1: field1Value.toString(),
-  //     api_key: "9MW9VYJ6HMMJYMLB",
-  //   };
-
-  //   socket.send(JSON.stringify(data));
-  // };
-
   return (
     <View>
       <Image
@@ -355,7 +150,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={{ paddingTop: 150 }} onPress={handleSendData}>
+        <TouchableOpacity onPress={toggleDoorState} style={{ paddingTop: 150 }}>
           <View
             style={{
               position: "relative",

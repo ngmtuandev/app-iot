@@ -40,7 +40,7 @@ export default function HistoryScreen() {
       </View>
       <View>
         {fakeDataHistory.map((item) => {
-          console.log(item.isOpen);
+          // console.log(item.isOpen);
           return (
             <View key={item.id} style={{ marginTop: 10 }}>
               <View>
