@@ -14,6 +14,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("app");
         const databaseRef = ref(db, "-NignlUxDKWV_4CaTYM-");
         const snapshot = await get(databaseRef);
         console.log("snapshot data : ", snapshot);
@@ -37,6 +38,7 @@ export default function HomeScreen() {
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
+
   const toggleDoorState = async () => {
     try {
       const databaseRef = ref(db, "-NignlUxDKWV_4CaTYM-");
@@ -44,7 +46,7 @@ export default function HomeScreen() {
       const snapshot = await get(databaseRef);
       if (snapshot.exists()) {
         const currentHand = snapshot.val().hand;
-        const newHandState = currentHand === 0 ? 1 : 0; // Chuyển đổi trạng thái
+        const newHandState = currentHand === 0 ? 4 : 0; // Chuyển đổi trạng thái
         await set(databaseRef, { hand: newHandState });
         console.log("Data updated successfully!");
       } else {
