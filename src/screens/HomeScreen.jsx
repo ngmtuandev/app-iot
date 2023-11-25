@@ -23,6 +23,11 @@ export default function HomeScreen() {
           console.log("Fetched data:", data["hand"]);
           setHand(data.hand);
           setIsDoor(data.hand === 0); // Assuming 0 means door closed
+          if (data.hand === 4) {
+            setTimeout(async () => {
+              await set(databaseRef, { hand: 0 });
+            }, 6000);
+          }
         } else {
           console.log("Data doesn't exist.");
         }

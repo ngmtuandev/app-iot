@@ -7,12 +7,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import HistoryScreen from "./src/screens/HistoryScreen";
 import Login from "./src/screens/Login";
 import Register from "./src/screens/Register";
+import OpenVoice from "./src/screens/OpenVoice";
 export default function App() {
   const Stack = createStackNavigator();
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={SCREEN_NAME.REGISTER_SCREEN}
+        initialRouteName={SCREEN_NAME.LOGIN_SCREEN}
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen
@@ -30,6 +31,10 @@ export default function App() {
         <Stack.Screen
           name={SCREEN_NAME.REGISTER_SCREEN}
           component={Register}
+        ></Stack.Screen>
+        <Stack.Screen
+          name={SCREEN_NAME.VOICE_SCREEN}
+          component={OpenVoice}
         ></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>

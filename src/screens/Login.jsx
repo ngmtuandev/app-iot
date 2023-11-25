@@ -235,6 +235,7 @@ const Login = () => {
             flexDirection: "row",
             width: "100%",
             gap: 30,
+            marginTop: -70,
           }}
         >
           <View
@@ -251,7 +252,7 @@ const Login = () => {
             }}
           >
             <TouchableOpacity onPress={handleLogin}>
-              <Text style={{ color: "white", fontSize: 20 }}>Login</Text>
+              <Text style={{ color: "white", fontSize: 18 }}>Login</Text>
             </TouchableOpacity>
           </View>
           <View
@@ -270,7 +271,7 @@ const Login = () => {
             <TouchableOpacity
               onPress={() => navigation.navigate(SCREEN_NAME.REGISTER_SCREEN)}
             >
-              <Text style={{ color: "white", fontSize: 20 }}>Register</Text>
+              <Text style={{ color: "white", fontSize: 18 }}>Register</Text>
             </TouchableOpacity>
           </View>
         </View>

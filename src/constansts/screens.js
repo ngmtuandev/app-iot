@@ -3,4 +3,5 @@ export const SCREEN_NAME = {
   HISTORY_SCREEN: "history",
   REGISTER_SCREEN: "register",
   LOGIN_SCREEN: "login",
+  VOICE_SCREEN: "voice",
 };
